@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BTC Mining Simulator</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #00ffcc;
+      font-family: monospace;
+      text-align: center;
+      padding: 40px;
+    }
+    input, button {
+      padding: 12px;
+      font-size: 16px;
+      margin: 10px 0;
+      width: 300px;
+    }
+    button {
+      background-color: #00ffcc;
+      color: #000;
+      border: none;
+      cursor: pointer;
+    }
+    #status {
+      margin-top: 20px;
+      font-size: 18px;
+      white-space: pre-wrap;
+    }
+    #btc-price, #pool-stats {
+      margin-bottom: 20px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div id="btc-price">📦 Loading BTC price...</div>
+
+  <h1>BTC Mining Simulator</h1>
+  <input id="wallet" placeholder="Enter your BTC wallet address" />
+  <br />
+  <button onclick="startMining()">Start Mining</button>
+
+  <div id="status">Waiting to start...</div>
+
+  <div id="pool-stats">📊 Loading SlushPool stats...</div>
+  <button onclick="refreshPoolStats()">Refresh Pool Stats</button>
+
+  <script>
+    async function startMining() {
+      const wallet = document.getElementById('wallet').value.trim();
+      const status = document.getElementById('status');
+      if (!wallet || wallet.length < 26) {
+        status.innerText = "❌ Invalid BTC wallet address.";
+        return;
+      }
+
+      status.innerText = "⛏️ Mining started... Please wait 5 seconds.";
+
+      try {
+        const res = await fetch('/api/mine', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ wallet })
+        });
+
+        const data = await res.json();
+        status.innerText =
+          `✅ ${data.message}\n` +
+          `🔢 Hashes: ${data.hashes}\n` +
+          `💰 Reward: ${data.reward}\n` +
+          `📬 Wallet: ${data.wallet}`;
+      } catch (e) {
+        status.innerText = "❌ Error during mining: " + e.message;
+      }
+    }
+
+    async function fetchBTCPrice() {
+      try {
+        const res = await fetch('/api/price');
+        const data = await res.json();
+        document.getElementById('btc-price').innerText =
+          `📈 Current BTC Price: $${data.last}`;
+      } catch {
+        document.getElementById('btc-price').innerText =
+          `⚠️ Failed to load BTC price`;
+      }
+    }
+
+    async function refreshPoolStats() {
+      const el = document.getElementById('pool-stats');
+      el.innerText = "📡 Fetching SlushPool hashrate...";
+      try {
+        const res = await fetch('/api/pool/slushpool');
+        const data = await res.json();
+
+        if (data.length > 0) {
+          const latest = data[0];
+          el.innerText =
+            `🖥️ SlushPool Stats (24h):\n` +
+            `• Date: ${latest.date}\n` +
+            `• Hashrate: ${(latest.hashrate / 1e3).toFixed(2)} GH/s\n` +
+            `• Blocks: ${latest.block_count}\n` +
+            `• Pool Share: ${latest.hashrate_pct.toFixed(2)} %`;
+        } else {
+          el.innerText = "⚠️ No SlushPool data available.";
+        }
+      } catch (e) {
+        el.innerText = "❌ Error fetching stats: " + e.message;
+      }
+    }
+
+    fetchBTCPrice();
+    refreshPoolStats();
+  </script>
+</body>
+</html>
