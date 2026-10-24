@@ -1,119 +1,608 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>BTC Mining Simulator</title>
-  <style>
-    body {
-      background-color: #121212;
-      color: #00ffcc;
-      font-family: monospace;
-      text-align: center;
-      padding: 40px;
-    }
-    input, button {
-      padding: 12px;
-      font-size: 16px;
-      margin: 10px 0;
-      width: 300px;
-    }
-    button {
-      background-color: #00ffcc;
-      color: #000;
-      border: none;
-      cursor: pointer;
-    }
-    #status {
-      margin-top: 20px;
-      font-size: 18px;
-      white-space: pre-wrap;
-    }
-    #btc-price, #pool-stats {
-      margin-bottom: 20px;
-      font-size: 18px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIP AI Football Predictions & Odd 400+ Tickets</title>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent: #38bdf8;
+            --accent-glow: rgba(56, 189, 248, 0.2);
+            --vip-gold: #f59e0b;
+            --btts-green: #10b981;
+            --border: #334155;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f1f5f9;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --accent: #0284c7;
+            --accent-glow: rgba(2, 132, 199, 0.15);
+            --vip-gold: #d97706;
+            --btts-green: #059669;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Header */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .hamburger-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            background: linear-gradient(45deg, var(--vip-gold), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .theme-toggle-btn {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* Hamburger Drawer Menu */
+        .drawer {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100%;
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            z-index: 1000;
+            transition: left 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-shadow: 10px 0 25px rgba(0,0,0,0.5);
+        }
+
+        .drawer.open {
+            left: 0;
+        }
+
+        .drawer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .drawer-close {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 22px;
+            cursor: pointer;
+        }
+
+        .drawer-menu-items {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .drawer-menu-items li a, .drawer-menu-items label {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 900;
+            display: none;
+        }
+
+        .drawer-overlay.active {
+            display: block;
+        }
+
+        /* Calendar Navigation Bar (-30 to +30 Days) */
+        .calendar-nav-container {
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 0;
+            overflow-x: auto;
+            white-space: nowrap;
+            scrollbar-width: thin;
+        }
+
+        .calendar-strip {
+            display: inline-flex;
+            gap: 8px;
+            padding: 0 15px;
+        }
+
+        .cal-day-btn {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 8px 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: center;
+            min-width: 70px;
+        }
+
+        .cal-day-btn .day-name {
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .cal-day-btn .day-date {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .cal-day-btn.active {
+            background-color: var(--accent);
+            border-color: var(--accent);
+            color: #ffffff;
+        }
+
+        .cal-day-btn.active .day-date, .cal-day-btn.active .day-name {
+            color: #ffffff;
+        }
+
+        /* Main Content Layout */
+        main {
+            flex: 1;
+            padding: 20px;
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Section Tabs */
+        .section-tabs {
+            display: flex;
+            gap: 10px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+
+        .tab-btn.active {
+            background-color: var(--accent-glow);
+            color: var(--accent);
+        }
+
+        .tab-content {
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .tab-content.active {
+            display: flex;
+        }
+
+        /* Ticket & Match Cards */
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .vip-ticket-card {
+            border: 2px solid var(--vip-gold);
+            background: linear-gradient(135deg, var(--bg-card) 0%, rgba(245, 158, 11, 0.05) 100%);
+        }
+
+        .badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 6px;
+            text-transform: uppercase;
+        }
+
+        .badge-vip {
+            background-color: var(--vip-gold);
+            color: #000;
+        }
+
+        .badge-btts {
+            background-color: var(--btts-green);
+            color: #fff;
+        }
+
+        .card-header {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .match-teams {
+            font-size: 18px;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .ticket-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+            background: var(--bg-primary);
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-item .label {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .stat-item .value {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .ai-analysis-box {
+            background-color: var(--bg-primary);
+            border-left: 4px solid var(--accent);
+            padding: 12px;
+            border-radius: 0 8px 8px 0;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+
+        .ai-analysis-box strong {
+            color: var(--text-primary);
+        }
+
+        footer {
+            text-align: center;
+            padding: 15px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border);
+            margin-top: auto;
+        }
+    </style>
 </head>
 <body>
-  <div id="btc-price">📦 Loading BTC price...</div>
 
-  <h1>BTC Mining Simulator</h1>
-  <input id="wallet" placeholder="Enter your BTC wallet address" />
-  <br />
-  <button onclick="startMining()">Start Mining</button>
+    <!-- Header -->
+    <header>
+        <div class="header-left">
+            <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu">☰</button>
+            <div class="logo">⚡ WINS1 VIP AI</div>
+        </div>
+        <button class="theme-toggle-btn" id="themeToggleBtn">☀️ Light Mode</button>
+    </header>
 
-  <div id="status">Waiting to start...</div>
+    <!-- Hamburger Sidebar Drawer -->
+    <div class="drawer-overlay" id="drawerOverlay"></div>
+    <nav class="drawer" id="drawer">
+        <div class="drawer-header">
+            <div class="logo" style="font-size: 18px;">Navigation Menu</div>
+            <button class="drawer-close" id="drawerClose">✕</button>
+        </div>
+        <ul class="drawer-menu-items">
+            <li><a href="#" onclick="switchTab('vip')">👑 Odd 400+ VIP Tickets</a></li>
+            <li><a href="#" onclick="switchTab('btts')">🎯 BTTS AI 100% Predictions</a></li>
+            <li><a href="#" onclick="switchTab('daily')">📅 Daily Fixtures & Calendar</a></li>
+            <hr style="border:0; border-top:1px solid var(--border); margin:5px 0;">
+            <li>
+                <label style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+                    <span>🤖 BTTS Filter (AI Mode)</span>
+                    <input type="checkbox" id="drawerBttsToggle" checked onchange="toggleBttsFilter(this.checked)" style="width:18px; height:18px; cursor:pointer;">
+                </label>
+            </li>
+            <li><a href="https://one.exnessonelink.com/a/m3alh1ljmu?source=app" target="_blank">📈 Exness Partner Trading</a></li>
+        </ul>
+    </nav>
 
-  <div id="pool-stats">📊 Loading SlushPool stats...</div>
-  <button onclick="refreshPoolStats()">Refresh Pool Stats</button>
+    <!-- Calendar Navigation Strip (-30 to +30 Days) -->
+    <div class="calendar-nav-container">
+        <div class="calendar-strip" id="calendarStrip"></div>
+    </div>
 
-  <script>
-    async function startMining() {
-      const wallet = document.getElementById('wallet').value.trim();
-      const status = document.getElementById('status');
-      if (!wallet || wallet.length < 26) {
-        status.innerText = "❌ Invalid BTC wallet address.";
-        return;
-      }
+    <!-- Main Content Area -->
+    <main>
+        <!-- Section Tabs -->
+        <div class="section-tabs">
+            <button class="tab-btn active" onclick="switchTab('vip')">Odd 400+ VIP Ticket</button>
+            <button class="tab-btn" onclick="switchTab('btts')">BTTS AI 100%</button>
+            <button class="tab-btn" onclick="switchTab('daily')">Match Calendar</button>
+        </div>
 
-      status.innerText = "⛏️ Mining started... Please wait 5 seconds.";
+        <!-- Tab 1: Odd 400+ VIP Ticket -->
+        <div id="tab-vip" class="tab-content active">
+            <div class="card vip-ticket-card">
+                <span class="badge badge-vip">VIP Odd 458.50</span>
+                <div class="card-header">AI Master Combo Ticket • Target Date Selected</div>
+                <div class="match-teams">🚀 Mega Accumulator Slip</div>
+                <div class="ticket-stats">
+                    <div class="stat-item">
+                        <div class="label">Total Odds</div>
+                        <div class="value" style="color: var(--vip-gold);">458.50</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="label">AI Confidence</div>
+                        <div class="value">99.4%</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="label">Matches</div>
+                        <div class="value">6 Legs</div>
+                    </div>
+                </div>
+                <div id="vipMatchesList"></div>
+            </div>
+        </div>
 
-      try {
-        const res = await fetch('/api/mine', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ wallet })
+        <!-- Tab 2: BTTS AI 100% Predictions -->
+        <div id="tab-btts" class="tab-content">
+            <div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 5px;">
+                Both Teams To Score (BTTS) AI mathematical probability model filtered for selected calendar date.
+            </div>
+            <div id="bttsMatchesList"></div>
+        </div>
+
+        <!-- Tab 3: Match Calendar View -->
+        <div id="tab-daily" class="tab-content">
+            <div class="card">
+                <div class="match-teams" style="font-size:16px;">📅 Active Date Schedule</div>
+                <p id="selectedDateDisplay" style="color: var(--accent); font-weight:700; margin-top:5px;"></p>
+                <div id="dailyMatchesList" style="margin-top: 15px; display:flex; flex-direction:column; gap:12px;"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        © 2026 Wins1 Big Odds AI Prediction Engine. 18+ Gamble Responsibly. Partnered with Exness.
+    </footer>
+
+    <script>
+        // Theme Toggle Logic
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const htmlElement = document.documentElement;
+
+        themeToggleBtn.addEventListener('click', () => {
+            const currentTheme = htmlElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            htmlElement.setAttribute('data-theme', newTheme);
+            themeToggleBtn.textContent = newTheme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
         });
 
-        const data = await res.json();
-        status.innerText =
-          `✅ ${data.message}\n` +
-          `🔢 Hashes: ${data.hashes}\n` +
-          `💰 Reward: ${data.reward}\n` +
-          `📬 Wallet: ${data.wallet}`;
-      } catch (e) {
-        status.innerText = "❌ Error during mining: " + e.message;
-      }
-    }
+        // Hamburger Menu Drawer Logic
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const drawer = document.getElementById('drawer');
+        const drawerOverlay = document.getElementById('drawerOverlay');
+        const drawerClose = document.getElementById('drawerClose');
 
-    async function fetchBTCPrice() {
-      try {
-        const res = await fetch('/api/price');
-        const data = await res.json();
-        document.getElementById('btc-price').innerText =
-          `📈 Current BTC Price: $${data.last}`;
-      } catch {
-        document.getElementById('btc-price').innerText =
-          `⚠️ Failed to load BTC price`;
-      }
-    }
-
-    async function refreshPoolStats() {
-      const el = document.getElementById('pool-stats');
-      el.innerText = "📡 Fetching SlushPool hashrate...";
-      try {
-        const res = await fetch('/api/pool/slushpool');
-        const data = await res.json();
-
-        if (data.length > 0) {
-          const latest = data[0];
-          el.innerText =
-            `🖥️ SlushPool Stats (24h):\n` +
-            `• Date: ${latest.date}\n` +
-            `• Hashrate: ${(latest.hashrate / 1e3).toFixed(2)} GH/s\n` +
-            `• Blocks: ${latest.block_count}\n` +
-            `• Pool Share: ${latest.hashrate_pct.toFixed(2)} %`;
-        } else {
-          el.innerText = "⚠️ No SlushPool data available.";
+        function toggleDrawer() {
+            drawer.classList.toggle('open');
+            drawerOverlay.classList.toggle('active');
         }
-      } catch (e) {
-        el.innerText = "❌ Error fetching stats: " + e.message;
-      }
-    }
 
-    fetchBTCPrice();
-    refreshPoolStats();
-  </script>
+        hamburgerBtn.addEventListener('click', toggleDrawer);
+        drawerClose.addEventListener('click', toggleDrawer);
+        drawerOverlay.addEventListener('click', toggleDrawer);
+
+        // Tab Switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById('tab-' + tabName).classList.add('active');
+            if(tabName === 'vip') document.querySelectorAll('.tab-btn')[0].classList.add('active');
+            if(tabName === 'btts') document.querySelectorAll('.tab-btn')[1].classList.add('active');
+            if(tabName === 'daily') document.querySelectorAll('.tab-btn')[2].classList.add('active');
+
+            if(drawer.classList.contains('open')) toggleDrawer();
+        }
+
+        // Calendar Generator (-30 to +30 Days from Today)
+        const calendarStrip = document.getElementById('calendarStrip');
+        const today = new Date();
+        let selectedDateStr = formatDate(today);
+
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        for (let i = -30; i <= 30; i++) {
+            const d = new Date(today);
+            d.setDate(today.getDate() + i);
+            const dateStr = formatDate(d);
+
+            const btn = document.createElement('button');
+            btn.className = `cal-day-btn ${i === 0 ? 'active' : ''}`;
+            btn.dataset.date = dateStr;
+
+            const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+            const dayDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+            btn.innerHTML = `<div class="day-name">${i === 0 ? 'Today' : dayName}</div><div class="day-date">${dayDate}</div>`;
+            
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.cal-day-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedDateStr = dateStr;
+                updateDynamicContent(selectedDateStr);
+            });
+
+            calendarStrip.appendChild(btn);
+        }
+
+        // Mock Dynamic Data Generator based on Selected Date & BTTS Filter
+        function updateDynamicContent(dateStr) {
+            document.getElementById('selectedDateDisplay').textContent = `Showing AI Predictions & Tickets for: ${dateStr}`;
+
+            // Render VIP Odd 400+ Matches
+            const vipContainer = document.getElementById('vipMatchesList');
+            vipContainer.innerHTML = `
+                <div style="display:flex; flex-direction:column; gap:12px; margin-top:10px;">
+                    <div class="card" style="padding:12px;">
+                        <div class="card-header">19:00 • EPL | Odds: 2.15</div>
+                        <div class="match-teams" style="font-size:15px;">Arsenal vs Chelsea</div>
+                        <div class="ai-analysis-box"><strong>AI Prediction:</strong> Over 2.5 Goals & BTTS (Confidence: 94.2%). Expected xG ratio: 2.14 vs 1.68.</div>
+                    </div>
+                    <div class="card" style="padding:12px;">
+                        <div class="card-header">21:00 • La Liga | Odds: 3.40</div>
+                        <div class="match-teams" style="font-size:15px;">Real Madrid vs Barcelona</div>
+                        <div class="ai-analysis-box"><strong>AI Prediction:</strong> HT/FT: Draw / Real Madrid (Confidence: 91.8%). Order flow odds movement indicates sharp money backing home side.</div>
+                    </div>
+                    <div class="card" style="padding:12px;">
+                        <div class="card-header">22:00 • Serie A | Odds: 2.85</div>
+                        <div class="match-teams" style="font-size:15px;">Inter Milan vs AC Milan</div>
+                        <div class="ai-analysis-box"><strong>AI Prediction:</strong> BTTS - Yes (Confidence: 96.5%). Both defenses missing key central defenders.</div>
+                    </div>
+                </div>
+            `;
+
+            // Render BTTS AI Matches
+            const bttsContainer = document.getElementById('bttsMatchesList');
+            bttsContainer.innerHTML = `
+                <div class="card">
+                    <span class="badge badge-btts">BTTS 100% AI</span>
+                    <div class="card-header">20:30 • Bundesliga • ${dateStr}</div>
+                    <div class="match-teams">Bayern Munich vs RB Leipzig</div>
+                    <div class="ticket-stats">
+                        <div class="stat-item"><div class="label">BTTS Prob</div><div class="value">98.5%</div></div>
+                        <div class="stat-item"><div class="label">Odd</div><div class="value">1.65</div></div>
+                        <div class="stat-item"><div class="label">Form Index</div><div class="value">5/5</div></div>
+                    </div>
+                    <div class="ai-analysis-box"><strong>Neural Network Analysis:</strong> Combined home/away scoring rate stands at 3.8 goals per match. Defensive transition vulnerability detected on both flanks.</div>
+                </div>
+                <div class="card" style="margin-top:12px;">
+                    <span class="badge badge-btts">BTTS 100% AI</span>
+                    <div class="card-header">21:45 • Ligue 1 • ${dateStr}</div>
+                    <div class="match-teams">Marseille vs Monaco</div>
+                    <div class="ticket-stats">
+                        <div class="stat-item"><div class="label">BTTS Prob</div><div class="value">96.8%</div></div>
+                        <div class="stat-item"><div class="label">Odd</div><div class="value">1.78</div></div>
+                        <div class="stat-item"><div class="label">Form Index</div><div class="value">4/5</div></div>
+                    </div>
+                    <div class="ai-analysis-box"><strong>Neural Network Analysis:</strong> High pressing intensity metrics guarantee open spaces in defensive thirds. Both teams scored in last 6 Head-to-Head encounters.</div>
+                </div>
+            `;
+
+            // Render Daily Schedule
+            const dailyContainer = document.getElementById('dailyMatchesList');
+            dailyContainer.innerHTML = `
+                <div style="padding:10px; background:var(--bg-primary); border-radius:8px; border:1px solid var(--border);">
+                    <div style="font-size:12px; color:var(--text-secondary);">17:30 • Premier League</div>
+                    <div style="font-weight:700; font-size:15px; margin:4px 0;">Manchester City vs Liverpool</div>
+                    <div style="font-size:13px; color:var(--accent);">AI Pick: Home Win & BTTS (Odds: 3.10)</div>
+                </div>
+                <div style="padding:10px; background:var(--bg-primary); border-radius:8px; border:1px solid var(--border);">
+                    <div style="font-size:12px; color:var(--text-secondary);">20:00 • Serie A</div>
+                    <div style="font-weight:700; font-size:15px; margin:4px 0;">Napoli vs Juventus</div>
+                    <div style="font-size:13px; color:var(--accent);">AI Pick: Under 2.5 Goals (Odds: 1.85)</div>
+                </div>
+            `;
+        }
+
+        function toggleBttsFilter(isChecked) {
+            console.log("BTTS AI Filter toggled:", isChecked);
+        }
+
+        // Initialize default view
+        updateDynamicContent(selectedDateStr);
+    </script>
 </body>
 </html>
