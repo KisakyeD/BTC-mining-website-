@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wins1™ - VIP Predictions</title>
+    <title>Wins1™ - VIP Predictions & Live Scores</title>
     <style>
         :root {
             --bg-color: #0f0f0f;
@@ -69,6 +69,7 @@
             padding-bottom: 20px;
         }
 
+        /* Top Bar */
         .top-bar {
             display: flex;
             align-items: center;
@@ -113,6 +114,7 @@
             vertical-align: super;
         }
 
+        /* Horizontal Continuous Calendar */
         .calendar-bar {
             display: flex;
             align-items: center;
@@ -171,6 +173,7 @@
             white-space: nowrap;
         }
 
+        /* Feed Container */
         .feed-container {
             padding: 16px;
         }
@@ -210,6 +213,7 @@
             color: var(--accent-green);
         }
 
+        /* Status Badges */
         .status-badge {
             display: inline-flex;
             align-items: center;
@@ -236,7 +240,158 @@
             color: var(--accent-green);
         }
 
-        /* Enhanced Auth Overlay */
+        /* Drawer Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .side-menu {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 280px;
+            height: 100%;
+            background-color: var(--menu-bg);
+            z-index: 101;
+            transition: transform 0.25s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .side-menu.open {
+            transform: translateX(300px);
+        }
+
+        .menu-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--subtext-color);
+            font-size: 22px;
+            cursor: pointer;
+        }
+
+        .menu-list {
+            list-style: none;
+            padding: 8px 0;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: var(--text-color);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .menu-item:hover {
+            background-color: var(--hover-bg);
+        }
+
+        .menu-item .icon {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .menu-divider {
+            height: 1px;
+            background-color: var(--border-color);
+            margin: 6px 0;
+        }
+
+        /* Modals */
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.95);
+            width: 92%;
+            max-width: 480px;
+            background-color: var(--modal-bg);
+            border: 1px solid var(--modal-border);
+            border-radius: 14px;
+            padding: 18px;
+            z-index: 200;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-color);
+        }
+
+        .modal-body {
+            max-height: 65vh;
+            overflow-y: auto;
+            font-size: 13px;
+            color: var(--text-color);
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        select {
+            background-color: var(--select-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 6px 10px;
+            border-radius: 6px;
+            outline: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Auth Gate Screen */
         .auth-overlay {
             position: fixed;
             top: 0;
@@ -386,91 +541,6 @@
             min-height: 16px;
         }
 
-        /* Drawer Overlay */
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(4px);
-            z-index: 100;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.25s ease, visibility 0.25s ease;
-        }
-
-        .overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .side-menu {
-            position: fixed;
-            top: 0;
-            left: -300px;
-            width: 280px;
-            height: 100%;
-            background-color: var(--menu-bg);
-            z-index: 101;
-            transition: transform 0.25s ease-in-out;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-        }
-
-        .side-menu.open {
-            transform: translateX(300px);
-        }
-
-        .menu-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            color: var(--subtext-color);
-            font-size: 22px;
-            cursor: pointer;
-        }
-
-        .menu-list {
-            list-style: none;
-            padding: 8px 0;
-        }
-
-        .menu-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 20px;
-            color: var(--text-color);
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .menu-item:hover {
-            background-color: var(--hover-bg);
-        }
-
-        .menu-item .icon {
-            margin-right: 12px;
-            width: 20px;
-            text-align: center;
-        }
-
-        .menu-divider {
-            height: 1px;
-            background-color: var(--border-color);
-            margin: 6px 0;
-        }
-
         .spinner-center {
             text-align: center;
             padding: 30px;
@@ -568,9 +638,45 @@
         <ul class="menu-list">
             <li class="menu-item" id="btnVip"><span class="icon">👑</span> VIP</li>
             <div class="menu-divider"></div>
+            <li class="menu-item" id="btnSettings"><span class="icon">⚙️</span> Settings</li>
+            <li class="menu-item" id="btnPrivacy"><span class="icon">🔒</span> Privacy Policy</li>
+            <div class="menu-divider"></div>
             <li class="menu-item" id="btnLogout" style="color: var(--accent-red);"><span class="icon">🚪</span> Logout</li>
         </ul>
     </aside>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="modalSettings">
+        <div class="modal-header">
+            <div class="modal-title">⚙️ Settings</div>
+            <button class="close-btn modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="setting-row">
+                <div>
+                    <div style="font-weight:700;">Theme Mode</div>
+                    <div style="font-size:11px; color:var(--subtext-color);">Dark or white layout preference</div>
+                </div>
+                <select id="themeSelect">
+                    <option value="dark">Dark</option>
+                    <option value="white">White</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Policy Modal -->
+    <div class="modal" id="modalPrivacy">
+        <div class="modal-header">
+            <div class="modal-title">🔒 Privacy Policy</div>
+            <button class="close-btn modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p><strong>Wins1™ Privacy Policy</strong></p><br>
+            <p>1. <strong>Live Feeds:</strong> Live scores and predictions sync directly with official sports APIs.</p><br>
+            <p>2. <strong>Data Privacy:</strong> User credentials and view preferences remain securely saved locally in your browser cache.</p>
+        </div>
+    </div>
 
     <script>
         const menuToggle = document.getElementById('menuToggle');
@@ -582,8 +688,17 @@
         const goHomeBtn = document.getElementById('goHomeBtn');
         const drawerHomeBtn = document.getElementById('drawerHomeBtn');
         const btnVip = document.getElementById('btnVip');
+        const btnSettings = document.getElementById('btnSettings');
+        const btnPrivacy = document.getElementById('btnPrivacy');
         const btnLogout = document.getElementById('btnLogout');
+        const themeSelect = document.getElementById('themeSelect');
 
+        const modalSettings = document.getElementById('modalSettings');
+        const modalPrivacy = document.getElementById('modalPrivacy');
+        const allModals = [modalSettings, modalPrivacy];
+        const modalCloses = document.querySelectorAll('.modal-close');
+
+        // Auth Gate Elements
         const authOverlay = document.getElementById('authOverlay');
         const tabLogin = document.getElementById('tabLogin');
         const tabSignup = document.getElementById('tabSignup');
@@ -699,6 +814,24 @@
             window.location.reload();
         });
 
+        // Theme Engine
+        function applyTheme(themeName) {
+            if (themeName === 'white') {
+                document.body.classList.add('light-theme');
+            } else {
+                document.body.classList.remove('light-theme');
+            }
+            localStorage.setItem('wins1_theme', themeName);
+            themeSelect.value = themeName;
+        }
+
+        themeSelect.addEventListener('change', (e) => {
+            applyTheme(e.target.value);
+        });
+
+        const savedTheme = localStorage.getItem('wins1_theme') || 'dark';
+        applyTheme(savedTheme);
+
         function formatDateYYYYMMDD(dateObj) {
             const y = dateObj.getFullYear();
             const m = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -722,12 +855,19 @@
                 const isActive = offset === selectedDateOffset ? "active" : "";
                 html += `
                     <div class="date-chip ${isActive}" id="date-chip-${offset}" onclick="selectDate(${offset})">
-                        <span class="day-label">${dayName}</span>
+                        <span class="day-name">${dayName}</span>
                         <span class="day-number">${dayNumber}</span>
                     </div>
                 `;
             }
             calendarBar.innerHTML = html;
+
+            setTimeout(() => {
+                const activeChip = document.getElementById(`date-chip-${selectedDateOffset}`);
+                if (activeChip) {
+                    activeChip.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                }
+            }, 100);
         }
 
         function selectDate(offset) {
@@ -762,13 +902,19 @@
                         const isFinished = evt.status?.type?.state === "post";
                         const homeScore = parseInt(home?.score || 0);
                         const awayScore = parseInt(away?.score || 0);
+                        const totalGoals = homeScore + awayScore;
 
                         let badgeClass = "status-pending";
                         let badgeHtml = `⌛ PENDING`;
 
                         if (isFinished) {
-                            badgeClass = (homeScore + awayScore >= 2) ? "status-win" : "status-loss";
-                            badgeHtml = (homeScore + awayScore >= 2) ? `✓ WIN` : `✕ LOSS`;
+                            if (totalGoals >= 2) {
+                                badgeClass = "status-win";
+                                badgeHtml = `✓ WIN`;
+                            } else {
+                                badgeClass = "status-loss";
+                                badgeHtml = `✕ LOSS`;
+                            }
                         }
 
                         html += `
@@ -798,18 +944,52 @@
             }
         }
 
+        function handleGoHome() {
+            closeMenu();
+            closeAllModals();
+            selectDate(0);
+        }
+
+        goHomeBtn.addEventListener('click', handleGoHome);
+        drawerHomeBtn.addEventListener('click', handleGoHome);
+        btnVip.addEventListener('click', () => { closeMenu(); selectDate(0); });
+        btnSettings.addEventListener('click', () => openModal(modalSettings));
+        btnPrivacy.addEventListener('click', () => openModal(modalPrivacy));
+
+        function openMenu() {
+            sideMenu.classList.add('open');
+            overlay.classList.add('active');
+        }
+
         function closeMenu() {
             sideMenu.classList.remove('open');
+            if (!document.querySelector('.modal.active')) {
+                overlay.classList.remove('active');
+            }
+        }
+
+        menuToggle.addEventListener('click', openMenu);
+        menuClose.addEventListener('click', closeMenu);
+
+        function openModal(modal) {
+            closeMenu();
+            setTimeout(() => {
+                modal.classList.add('active');
+                overlay.classList.add('active');
+            }, 100);
+        }
+
+        function closeAllModals() {
+            allModals.forEach(m => m.classList.remove('active'));
             overlay.classList.remove('active');
         }
 
-        menuToggle.addEventListener('click', () => {
-            sideMenu.classList.add('open');
-            overlay.classList.add('active');
+        overlay.addEventListener('click', () => {
+            closeMenu();
+            closeAllModals();
         });
 
-        menuClose.addEventListener('click', closeMenu);
-        overlay.addEventListener('click', closeMenu);
+        modalCloses.forEach(btn => btn.addEventListener('click', closeAllModals));
     </script>
 </body>
 </html>
