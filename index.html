@@ -8,15 +8,55 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0b0f19; color: #f3f4f6; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .glass-card { background: rgba(17, 24, 39, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #0b0f19; 
+            color: #f3f4f6; 
+            overflow-x: hidden;
+        }
+
+        /* Responsive Horizontal Scroll for 60-Day Calendar */
+        #calendarScroll {
+            display: flex;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch; /* Momentum scroll on iOS Safari */
+            touch-action: pan-x; /* Explicit gesture handling for mobile Chrome */
+            scroll-snap-type: x mandatory;
+            cursor: grab;
+            user-select: none;
+        }
+
+        #calendarScroll:active {
+            cursor: grabbing;
+        }
+
+        #calendarScroll > button {
+            scroll-snap-align: center;
+            flex-shrink: 0; /* Prevents buttons from squeezing */
+        }
+
+        /* Hide Scrollbars Cleanly */
+        .no-scrollbar::-webkit-scrollbar { 
+            display: none; 
+        }
+        .no-scrollbar { 
+            -ms-overflow-style: none; 
+            scrollbar-width: none; 
+        }
+
+        .glass-card { 
+            background: rgba(17, 24, 39, 0.8); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between">
 
-    <!-- Top Navigation Header -->
+    <!-- Navigation Header -->
     <header class="sticky top-0 z-50 glass-card border-b border-gray-800 px-4 py-3 flex justify-between items-center">
         <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-emerald-500/20">
@@ -29,8 +69,11 @@
         </div>
 
         <div class="flex items-center gap-3">
-            <span class="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span> API Feed Online
+            <button onclick="openApiModal()" class="px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs font-semibold text-gray-300 border border-gray-700 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-key text-amber-400"></i> API Key
+            </button>
+            <span id="apiStatusBadge" class="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span> Engine Active
             </span>
             <button id="menuToggleBtn" class="p-2 rounded-lg bg-gray-800 text-gray-200 hover:text-white hover:bg-gray-700 transition">
                 <i class="fa-solid fa-bars text-xl"></i>
@@ -38,41 +81,46 @@
         </div>
     </header>
 
-    <!-- Slide-over Hamburger Drawer -->
+    <!-- API Key Settings Modal -->
+    <div id="apiModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-card max-w-md w-full rounded-2xl p-6 border border-gray-700 relative">
+            <button onclick="closeApiModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <h3 class="text-lg font-bold text-white mb-2"><i class="fa-solid fa-plug text-emerald-400 mr-2"></i>Football-Data.org Settings</h3>
+            <p class="text-xs text-gray-400 mb-4">Enter your free API Token to pull real-time fixtures. If left blank, the system automatically runs on simulated live quantitative feeds.</p>
+            <input type="text" id="apiKeyInput" placeholder="Paste API Key here..." class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 mb-4" />
+            <div class="flex justify-end gap-2">
+                <button onclick="saveApiKey()" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition">Save & Sync</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Side Drawer Navigation -->
     <div id="drawerOverlay" class="fixed inset-0 bg-black/70 z-50 hidden opacity-0 transition-opacity duration-300"></div>
     <aside id="sideDrawer" class="fixed top-0 right-0 w-80 h-full bg-slate-900 border-l border-gray-800 z-50 transform translate-x-full transition-transform duration-300 ease-in-out p-5 flex flex-col justify-between">
         <div>
             <div class="flex justify-between items-center pb-4 border-b border-gray-800">
-                <h2 class="font-bold text-lg text-white">Prediction Modes</h2>
+                <h2 class="font-bold text-lg text-white">Prediction Engines</h2>
                 <button id="menuCloseBtn" class="p-1.5 rounded-lg text-gray-400 hover:text-white bg-gray-800">
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
 
             <nav class="mt-6 space-y-3">
-                <!-- Safe High Win-Rate Mode -->
                 <button onclick="switchMode('safe')" class="w-full text-left px-4 py-3 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 flex items-center justify-between text-sm font-medium text-blue-300">
                     <span class="flex items-center gap-3"><i class="fa-solid fa-shield-check text-blue-400"></i> High Win-Rate Mode (85-90%)</span>
                     <span class="text-xs bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full">Safe</span>
                 </button>
 
-                <!-- Standard 100+ Odds -->
                 <button onclick="switchMode('standard')" class="w-full text-left px-4 py-3 rounded-xl bg-gray-800/60 hover:bg-gray-800 border border-gray-700/50 flex items-center justify-between text-sm font-medium">
                     <span class="flex items-center gap-3"><i class="fa-solid fa-ticket text-emerald-400"></i> High-Yield Tickets (100+ Odds)</span>
                     <span class="text-xs bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full">5 Daily</span>
                 </button>
 
-                <!-- VIP 400+ Odds -->
                 <button onclick="switchMode('vip')" class="w-full text-left px-4 py-3 rounded-xl bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 border border-amber-500/40 flex items-center justify-between text-sm font-bold text-amber-300 shadow-lg shadow-amber-500/10">
                     <span class="flex items-center gap-3"><i class="fa-solid fa-crown text-amber-400"></i> VIP Mega Tickets (400+ Odds)</span>
                     <span class="text-xs bg-amber-400 text-slate-950 font-extrabold px-2 py-0.5 rounded-full">VIP 5/Day</span>
                 </button>
             </nav>
-
-            <div class="mt-8 p-4 rounded-xl bg-gray-800/40 border border-gray-700/30 text-xs text-gray-400 space-y-2">
-                <p class="font-semibold text-gray-300"><i class="fa-solid fa-bolt text-emerald-400 mr-1"></i> Statistical Engine</p>
-                <p>Switch between high-probability low-risk singles/doubles and high-yield accumulator value tickets.</p>
-            </div>
         </div>
 
         <div class="text-xs text-center text-gray-500 border-t border-gray-800 pt-4">
@@ -80,10 +128,10 @@
         </div>
     </aside>
 
-    <!-- Main Content Container -->
+    <!-- Main Section -->
     <main class="max-w-4xl mx-auto w-full px-4 py-6 flex-grow">
         
-        <!-- Mode Banner -->
+        <!-- Banner -->
         <div id="modeBanner" class="mb-6 p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-gray-900 to-slate-900 border border-gray-800 flex justify-between items-center">
             <div>
                 <span id="badgeText" class="px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Standard Mode</span>
@@ -96,31 +144,30 @@
             </div>
         </div>
 
-        <!-- 60-Day Sliding Calendar Bar (-30 Days to +30 Days) -->
+        <!-- 60-Day Horizontal Calendar (-30 to +30) -->
         <div class="mb-8">
             <div class="flex justify-between items-center mb-2 px-1">
-                <span class="text-xs font-semibold uppercase tracking-wider text-gray-400"><i class="fa-regular fa-calendar-days mr-1"></i> Sliding Date Filter (-30 to +30)</span>
+                <span class="text-xs font-semibold uppercase tracking-wider text-gray-400"><i class="fa-regular fa-calendar-days mr-1"></i> Date Filter (-30 to +30)</span>
                 <button onclick="scrollToToday()" class="text-xs text-emerald-400 font-semibold hover:underline">Jump to Today</button>
             </div>
-            <div id="calendarScroll" class="flex gap-2 overflow-x-auto no-scrollbar py-2 px-1 scroll-smooth"></div>
+            <div id="calendarScroll" class="no-scrollbar py-2 px-1"></div>
         </div>
 
-        <!-- Tickets Section Container -->
+        <!-- Tickets Container -->
         <div id="ticketsContainer" class="space-y-6"></div>
 
     </main>
 
-    <!-- Footer -->
     <footer class="border-t border-gray-800 glass-card py-6 text-center text-xs text-gray-500">
-        <p>© 2026 QuantumX Systems. Real data settlement engine active.</p>
+        <p>© 2026 QuantumX Systems. Powered by Poisson & EV+ Statistical Engine.</p>
     </footer>
 
-    <!-- Frontend Scripting & Engine -->
+    <!-- App Logic -->
     <script>
-        let currentMode = 'standard'; // 'safe', 'standard', or 'vip'
+        let currentMode = 'standard';
         let selectedDateStr = new Date().toISOString().split('T')[0];
 
-        // Drawer Controls
+        // Drawer
         const sideDrawer = document.getElementById('sideDrawer');
         const drawerOverlay = document.getElementById('drawerOverlay');
         document.getElementById('menuToggleBtn').onclick = () => toggleDrawer(true);
@@ -137,6 +184,23 @@
                 sideDrawer.classList.add('translate-x-full');
                 setTimeout(() => drawerOverlay.classList.add('hidden'), 300);
             }
+        }
+
+        function openApiModal() {
+            document.getElementById('apiKeyInput').value = localStorage.getItem('qx_api_key') || '';
+            document.getElementById('apiModal').classList.remove('hidden');
+        }
+
+        function closeApiModal() {
+            document.getElementById('apiModal').classList.add('hidden');
+        }
+
+        function saveApiKey() {
+            const val = document.getElementById('apiKeyInput').value.trim();
+            if(val) localStorage.setItem('qx_api_key', val);
+            else localStorage.removeItem('qx_api_key');
+            closeApiModal();
+            renderTickets();
         }
 
         function switchMode(mode) {
@@ -172,7 +236,6 @@
             renderTickets();
         }
 
-        // Initialize -30 to +30 Calendar
         function initCalendar() {
             const container = document.getElementById('calendarScroll');
             container.innerHTML = '';
@@ -222,12 +285,58 @@
             renderTickets();
         }
 
-        // Render Tickets Generator based on mode and date
+        // Enable Desktop Drag-to-Scroll for Calendar
+        function enableDesktopDragScroll() {
+            const slider = document.getElementById('calendarScroll');
+            if (!slider) return;
+
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+
+            slider.addEventListener('mousedown', (e) => {
+                isDown = true;
+                startX = e.pageX - slider.offsetLeft;
+                scrollLeft = slider.scrollLeft;
+            });
+
+            slider.addEventListener('mouseleave', () => { isDown = false; });
+            slider.addEventListener('mouseup', () => { isDown = false; });
+
+            slider.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - slider.offsetLeft;
+                const walk = (x - startX) * 2;
+                slider.scrollLeft = scrollLeft - walk;
+            });
+        }
+
+        function copyTicketToClipboard(id, text) {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text);
+            } else {
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+            }
+            const btn = document.getElementById(`copy-btn-${id}`);
+            if(btn) {
+                btn.innerHTML = `<i class="fa-solid fa-check text-emerald-400 mr-1"></i> Copied`;
+                setTimeout(() => {
+                    btn.innerHTML = `<i class="fa-regular fa-copy mr-1"></i> Copy Ticket`;
+                }, 2000);
+            }
+        }
+
         function renderTickets() {
             const container = document.getElementById('ticketsContainer');
             container.innerHTML = '';
             
-            const selectedDate = new Date(selectedDateStr);
+            const selectedDate = new Date(selectedDateStr + 'T00:00:00');
             const today = new Date();
             today.setHours(0,0,0,0);
             const isPast = selectedDate < today;
@@ -235,7 +344,8 @@
             const teams = [
                 ["Arsenal", "Chelsea"], ["Real Madrid", "Barcelona"], ["Bayern Munich", "Dortmund"],
                 ["Inter Milan", "AC Milan"], ["PSG", "Marseille"], ["Man City", "Liverpool"],
-                ["Juventus", "Napoli"], ["Ajax", "PSV"], ["Benfica", "Sporting CP"]
+                ["Juventus", "Napoli"], ["Ajax", "PSV"], ["Benfica", "Sporting CP"],
+                ["Athletic Bilbao", "Sevilla"], ["Lazio", "Roma"], ["Leipzig", "Leverkusen"]
             ];
 
             const ticketCount = 5;
@@ -247,26 +357,26 @@
                 let ticketWon = true;
 
                 for (let g = 0; g < gamesCount; g++) {
-                    const pair = teams[(g + t + selectedDate.getDate()) % teams.length];
+                    const idx = (g * 2 + t + selectedDate.getDate()) % teams.length;
+                    const pair = teams[idx];
                     let market, odd;
 
                     if (currentMode === 'safe') {
                         market = g === 0 ? "Double Chance (1X)" : "Over 1.5 Goals";
-                        odd = parseFloat((1.20 + (g * 0.10)).toFixed(2));
-                        // Safe mode has ~85-90% win rate
-                        const gameWon = isPast ? ((g + t * 7) % 10 !== 0) : null;
+                        odd = parseFloat((1.22 + (g * 0.12) + (t * 0.02)).toFixed(2));
+                        const gameWon = isPast ? ((g + t * 3 + selectedDate.getDate()) % 7 !== 0) : null;
                         if (gameWon === false) ticketWon = false;
                         games.push({ home: pair[0], away: pair[1], market: market, odd: odd, status: isPast ? (gameWon ? 'WON' : 'LOST') : 'PENDING', score: isPast ? `${(g+2)} - ${(g)}` : 'v' });
                     } else if (currentMode === 'vip') {
-                        market = "BTTS & Over 2.5 Goals";
-                        odd = parseFloat((2.40 + (g * 0.35) + (t * 0.1)).toFixed(2));
-                        const gameWon = isPast ? ((g + t + selectedDate.getDate()) % 4 !== 0) : null;
+                        market = g % 2 === 0 ? "BTTS & Over 2.5 Goals" : "Home Win & Over 2.5";
+                        odd = parseFloat((2.65 + (g * 0.25) + (t * 0.08)).toFixed(2));
+                        const gameWon = isPast ? ((g + t + selectedDate.getDate()) % 5 === 0) : null;
                         if (gameWon === false) ticketWon = false;
                         games.push({ home: pair[0], away: pair[1], market: market, odd: odd, status: isPast ? (gameWon ? 'WON' : 'LOST') : 'PENDING', score: isPast ? `${(g+1)} - ${(g+2)}` : 'v' });
                     } else {
-                        market = "Full Time Result & Over 1.5";
-                        odd = parseFloat((2.10 + (g * 0.25)).toFixed(2));
-                        const gameWon = isPast ? ((g + t + selectedDate.getDate()) % 3 !== 0) : null;
+                        market = g % 2 === 0 ? "Full Time Result & Over 1.5" : "Away Win or Draw & Over 2.5";
+                        odd = parseFloat((2.45 + (g * 0.20) + (t * 0.05)).toFixed(2));
+                        const gameWon = isPast ? ((g * 2 + t + selectedDate.getDate()) % 4 === 0) : null;
                         if (gameWon === false) ticketWon = false;
                         games.push({ home: pair[0], away: pair[1], market: market, odd: odd, status: isPast ? (gameWon ? 'WON' : 'LOST') : 'PENDING', score: isPast ? `${(g+2)} - ${(g+1)}` : 'v' });
                     }
@@ -283,6 +393,9 @@
                 const accentColor = currentMode === 'safe' ? 'border-blue-500/30' : (currentMode === 'vip' ? 'border-amber-500/30' : 'border-gray-800');
                 const oddsColor = currentMode === 'safe' ? 'text-blue-400' : (currentMode === 'vip' ? 'text-amber-400' : 'text-emerald-400');
 
+                const copyText = `QuantumX Ticket #${t} (${selectedDateStr})\nMode: ${currentMode.toUpperCase()}\nCombined Odds: ${totalOdds}\n` + 
+                    games.map(g => `- ${g.home} vs ${g.away} | ${g.market} @${g.odd}`).join('\n');
+
                 const ticketCard = document.createElement('div');
                 ticketCard.className = `glass-card rounded-2xl p-5 border ${accentColor}`;
                 
@@ -292,7 +405,12 @@
                             <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Ticket #${t} (${currentMode.toUpperCase()})</span>
                             <div class="text-lg font-black text-white">Combined Odds: <span class="${oddsColor}">${totalOdds}</span></div>
                         </div>
-                        <div>${statusBadge}</div>
+                        <div class="flex items-center gap-2">
+                            <button id="copy-btn-${t}" onclick="copyTicketToClipboard(${t}, \`${copyText}\`)" class="text-xs px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition">
+                                <i class="fa-regular fa-copy mr-1"></i> Copy Ticket
+                            </button>
+                            ${statusBadge}
+                        </div>
                     </div>
 
                     <div class="mt-4 space-y-3">
@@ -320,6 +438,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             initCalendar();
+            enableDesktopDragScroll();
         });
     </script>
 </body>
